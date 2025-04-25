@@ -1,34 +1,18 @@
-plugins.push(
-  require('@babel/plugin-transform-react-jsx'),
-  require('@babel/plugin-transform-react-display-name'),
-  require('@babel/plugin-transform-typescript'),
+import ts from 'typescript';
 
-  // 支持 class 属性（如 class fields）
-  require('@babel/plugin-proposal-class-properties'),
+function extractWithTSCompiler(filePath: string): string[] {
+  const sourceCode = fs.readFileSync(filePath, 'utf-8');
+  const sourceFile = ts.createSourceFile(filePath, sourceCode, ts.ScriptTarget.Latest, true);
 
-  // 支持私有字段（#xxx）
-  require('@babel/plugin-proposal-private-methods'),
+  const results: string[] = [];
 
-  // 支持可选链（a?.b）
-  require('@babel/plugin-proposal-optional-chaining'),
+  function visit(node: ts.Node) {
+    if (ts.isStringLiteral(node)) {
+      results.push(node.text);
+    }
+    ts.forEachChild(node, visit);
+  }
 
-  // 支持空值合并运算符（a ?? b）
-  require('@babel/plugin-proposal-nullish-coalescing-operator'),
-
-  // 支持装饰器（如 @observer）
-  [require('@babel/plugin-proposal-decorators'), { legacy: true }]
-);
-
-
-
-npm install --save-dev \
-  @babel/plugin-transform-react-jsx \
-  @babel/plugin-transform-react-display-name \
-  @babel/plugin-transform-typescript \
-  @babel/plugin-proposal-class-properties \
-  @babel/plugin-proposal-private-methods \
-  @babel/plugin-proposal-optional-chaining \
-  @babel/plugin-proposal-nullish-coalescing-operator \
-  @babel/plugin-proposal-decorators
-
-
+  visit(sourceFile);
+  return results;
+}
