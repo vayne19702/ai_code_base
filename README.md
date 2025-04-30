@@ -1,52 +1,34 @@
-const scanResults = [
-  {
-    content: "Save",
-    translation: [
-      { language: "Chinese", value: "保存" },
-      { language: "Japanese", value: "保存する" }
-    ]
-  },
-  {
-    content: "Cancel",
-    translation: [
-      { language: "Chinese", value: "取消" },
-      { language: "Japanese", value: "キャンセル" }
-    ]
+import fetch from 'node-fetch';  // 注意：VSCode扩展里要用 node-fetch（不是浏览器fetch）
+
+export type TranslationItem = {
+  content: string;
+  translation: {
+    language: string;
+    value: string;
+  }[];
+};
+
+/**
+ * 调用翻译API，返回带翻译结果的数组
+ * @param contents 原文数组
+ * @returns 包含翻译结果的数组
+ */
+export async function fetchTranslations(contents: string[]): Promise<TranslationItem[]> {
+  const response = await fetch('https://your-api.com/translate', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      texts: contents,
+      targetLanguages: ['chinese', 'japanese']  // 按需修改
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Translation API call failed with status ${response.status}`);
   }
-];
 
-
-
-function generateStaticHtml(scanResults: any[]): string {
-  const itemsHtml = scanResults.map(item => {
-    const translations = item.translation.map(t => 
-      `<div class="translation">${t.language}: ${t.value}</div>`
-    ).join("");
-
-    return `
-      <div class="item">
-        <div class="content">${item.content}</div>
-        ${translations}
-      </div>
-    `;
-  }).join("");
-
-  return `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <style>
-        body { font-family: sans-serif; padding: 1em; }
-        .item { margin-bottom: 1.5em; }
-        .content { font-weight: bold; margin-bottom: 0.3em; white-space: pre-wrap; }
-        .translation { margin-left: 1em; color: #555; }
-      </style>
-    </head>
-    <body>
-      <h2>Scan Results</h2>
-      ${itemsHtml}
-    </body>
-    </html>
-  `;
+  const result: TranslationItem[] = await response.json();
+  return result;
 }
