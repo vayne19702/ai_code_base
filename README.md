@@ -1,14 +1,10 @@
-function splitObjectIntoBatches<T>(obj: { [key: string]: T }, batchCount: number): { [key: string]: T }[] {
+function splitObjectByMaxKeysPerBatch<T>(obj: { [key: string]: T }, maxKeysPerBatch: number): { [key: string]: T }[] {
   const keys = Object.keys(obj);
-  const batchSize = Math.ceil(keys.length / batchCount);
-
   const result: { [key: string]: T }[] = [];
 
-  for (let i = 0; i < batchCount; i++) {
+  for (let i = 0; i < keys.length; i += maxKeysPerBatch) {
     const batch: { [key: string]: T } = {};
-    const start = i * batchSize;
-    const end = start + batchSize;
-    const chunkKeys = keys.slice(start, end);
+    const chunkKeys = keys.slice(i, i + maxKeysPerBatch);
 
     chunkKeys.forEach(key => {
       batch[key] = obj[key];
@@ -19,6 +15,7 @@ function splitObjectIntoBatches<T>(obj: { [key: string]: T }, batchCount: number
 
   return result;
 }
+
 
 
 type Result = { [key: string]: number[] };
